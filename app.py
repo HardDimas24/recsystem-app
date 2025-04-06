@@ -123,6 +123,7 @@ if movie_name:
                     st.markdown(f"<p style='font-size:20px; font-family:Merriweather, serif; font-weight:bold;'>{rec}</p>", unsafe_allow_html=True)
                     st.markdown(f"**Год:** {movie_row.iloc[0]['year']}")  # Год под названием
                     st.markdown(f"**Режиссер:** <br> {director}", unsafe_allow_html=True)
-                    st.markdown(f"**Актеры:** <br> {'<br>'.join(actors)}", unsafe_allow_html=True)  # Актеры на отдельных строках
+                    st.markdown(f"**Актеры:** <br> {'<br>'.join(actors)}", unsafe_allow_html=True)
+                    st.markdown(poster_url)
     else:
         st.warning("Некорректное название фильма (такого нет в базе).")
