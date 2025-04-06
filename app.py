@@ -31,11 +31,14 @@ def load_data():
 # ========== Функция для получения рекомендаций ==========
 
 def get_recommendations(title, cosine_sim, indices, df, n=10):
-    idx = indices[title]
-    sim_scores = list(enumerate(cosine_sim[idx]))
-    sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)[1:n+1]
-    movie_indices = [i[0] for i in sim_scores]
-    return df['title'].iloc[movie_indices].tolist()
+    try:
+        idx = indices[title]
+        sim_scores = list(enumerate(cosine_sim[idx]))
+        sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)[1:n+1]
+        movie_indices = [i[0] for i in sim_scores]
+        return df['title'].iloc[movie_indices].tolist()
+    except KeyError:
+        return None  # Возвращаем None, если фильм не найден
 
 # ========== Интерфейс Streamlit ==========
 
@@ -44,8 +47,7 @@ st.markdown("<h1 style='text-align: center;'>🎥 Рекомендательна
 st.write("Введите название фильма, и получите рекомендации 🎯")
 
 # OMDb API ключ
-TMDB_API_KEY = "36a872630050f38a5aac3672f5c5458b"  # Ваш ключ от TMDb API
-
+TMDB_API_KEY = "36a872630050f38a5aac3672f5c5458b" 
 def get_poster(imdbid):
     """Получить URL постера фильма по imdbid через TMDb API."""
     url = f"https://api.themoviedb.org/3/find/{imdbid}?api_key={TMDB_API_KEY}&external_source=imdb_id"
@@ -123,4 +125,4 @@ if movie_name:
                     st.markdown(f"**Режиссер:** <br> {director}", unsafe_allow_html=True)
                     st.markdown(f"**Актеры:** <br> {'<br>'.join(actors)}", unsafe_allow_html=True)  # Актеры на отдельных строках
     else:
-        st.warning("Фильм не найден. Попробуйте ввести точное название.")
+        st.warning("Некорректное название фильма (такого нет в базе).")
