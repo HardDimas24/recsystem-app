@@ -47,7 +47,7 @@ st.markdown("<h1 style='text-align: center;'>🎥 Рекомендательна
 st.write("Введите название фильма, и получите рекомендации 🎯")
 
 # OMDb API ключ
-TMDB_API_KEY = "36a872630050f38a5aac3672f5c5458b" 
+TMDB_API_KEY = st.secrets["TMDB_API_KEY"]
 def get_poster(imdbid):
     """Получить URL постера фильма по imdbid через TMDb API."""
     url = f"https://api.themoviedb.org/3/find/{imdbid}?api_key={TMDB_API_KEY}&external_source=imdb_id"
