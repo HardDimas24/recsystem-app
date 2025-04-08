@@ -10,6 +10,7 @@ def create_indices(df):
 
 # ========== Загрузка сериализованных данных ==========
 
+@st.cache_data
 def load_data():
     status = st.empty()  # Создаем пустой контейнер для обновления текста
 
@@ -69,7 +70,7 @@ with st.spinner("Загрузка данных..."):
 movie_name = st.text_input("Название фильма", "", placeholder="Например: Inception")
 
 # Слайдер — количество рекомендаций
-top_n = st.slider("Сколько фильмов показать?", min_value=5, max_value=20, value=10)
+top_n = st.slider("Сколько фильмов показать?", min_value=5, max_value=20, value=8)
 
 # Добавляем выбор метода
 method = st.radio(
@@ -89,41 +90,47 @@ if movie_name:
 
     if recommendations:
         st.subheader(f"🎯 Рекомендации ({method}) для: {movie_name}")
-        
-        # Создаем колонки для фильмов
-        cols = st.columns(len(recommendations))  # Создаем столько колонок, сколько фильмов
-        
-        for idx, rec in enumerate(recommendations):
-            with cols[idx]:  # Размещаем каждый фильм в своей колонке
-                # Получаем строку DataFrame для текущего фильма
-                movie_row = df[df['title'] == rec]
-                if not movie_row.empty:
-                    imdbid = movie_row.iloc[0]['imdb_id']  # Получаем imdbid
-                    poster_url = get_poster(imdbid)  # Получаем URL постера
-                    if poster_url:
-                        st.image(poster_url, width=1000)  # Отображаем постер
-                    else:
-                        st.write("Постер недоступен")
-                    
-                    # Получаем режиссера и актеров из столбцов
-                    director = movie_row.iloc[0]['director']  # Берем режиссера из столбца
-                    actors = movie_row.iloc[0]['actors']  # Берем строку актеров из столбца
 
-                    # Преобразуем строку в список
-                    try:
-                        actors = ast.literal_eval(actors)
-                    except (ValueError, SyntaxError):
-                        actors = []  # Если преобразование не удалось, задаем пустой список
+        # Устанавливаем количество фильмов в строке
+        movies_per_row = 8
 
-                    # Убедимся, что actors — это список строк
-                    if not isinstance(actors, list):
-                        actors = []
-                    actors = [str(actor).strip() for actor in actors]  # Убираем лишние пробелы
+        # Разбиваем рекомендации на строки по 8 фильмов
+        for i in range(0, len(recommendations), movies_per_row):
+            row_recommendations = recommendations[i:i + movies_per_row]
+            
+            # Создаем 8 колонок, даже если фильмов меньше
+            cols = st.columns(movies_per_row)
 
-                    st.markdown(f"<p style='font-size:20px; font-family:Merriweather, serif; font-weight:bold;'>{rec}</p>", unsafe_allow_html=True)
-                    st.markdown(f"**Год:** {movie_row.iloc[0]['year']}")  # Год под названием
-                    st.markdown(f"**Режиссер:** <br> {director}", unsafe_allow_html=True)
-                    st.markdown(f"**Актеры:** <br> {'<br>'.join(actors)}", unsafe_allow_html=True)
-                    st.markdown(poster_url)
+            for idx, rec in enumerate(row_recommendations):
+                with cols[idx]:  # Размещаем каждый фильм в своей колонке
+                    # Получаем строку DataFrame для текущего фильма
+                    movie_row = df[df['title'] == rec]
+                    if not movie_row.empty:
+                        imdbid = movie_row.iloc[0]['imdb_id']  # Получаем imdbid
+                        poster_url = get_poster(imdbid)  # Получаем URL постера
+                        if poster_url:
+                            st.image(poster_url, width=150)  # Отображаем постер
+                        else:
+                            st.write("Постер недоступен")
+                        
+                        # Получаем режиссера и актеров из столбцов
+                        director = movie_row.iloc[0]['director']  # Берем режиссера из столбца
+                        actors = movie_row.iloc[0]['actors']  # Берем строку актеров из столбца
+
+                        # Преобразуем строку в список
+                        try:
+                            actors = ast.literal_eval(actors)
+                        except (ValueError, SyntaxError):
+                            actors = []  # Если преобразование не удалось, задаем пустой список
+
+                        # Убедимся, что actors — это список строк
+                        if not isinstance(actors, list):
+                            actors = []
+                        actors = [str(actor).strip() for actor in actors]  # Убираем лишние пробелы
+
+                        st.markdown(f"**{rec}**")
+                        st.markdown(f"**Год:** {movie_row.iloc[0]['year']}")
+                        st.markdown(f"**Режиссер:** {director}")
+                        st.markdown(f"**Актеры:** {', '.join(actors)}")
     else:
         st.warning("Некорректное название фильма (такого нет в базе).")
